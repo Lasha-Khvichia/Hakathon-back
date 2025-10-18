@@ -4,20 +4,25 @@ import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
-import { LocalAuthGuard } from './local.stategy';
+import { LocalStrategy } from './local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     UserModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1d' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1d' },
+      }),
+      inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User])
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LocalAuthGuard],
+  providers: [AuthService, JwtStrategy, LocalStrategy],
 })
 export class AuthModule {}

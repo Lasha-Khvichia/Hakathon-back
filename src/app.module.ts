@@ -9,7 +9,10 @@ import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes ConfigModule available globally
+      envFilePath: '.env',
+    }),
     TypeOrmModule.forRoot({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),

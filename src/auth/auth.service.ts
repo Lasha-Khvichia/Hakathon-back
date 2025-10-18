@@ -7,6 +7,8 @@ import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
+  private blacklistedTokens: Set<string> = new Set();
+
   constructor(
     private usersService: UserService,
     private jwtService: JwtService,
@@ -26,7 +28,22 @@ export class AuthService {
     return { access_token: this.jwtService.sign(payload) };
   }
 
-  async register(data: CreateUserDto, role?: string) {
-    return this.usersService.create({name: data.name, email: data.email, password: data.password}, role);
+  isTokenBlacklisted(token: string): boolean {
+    return this.blacklistedTokens.has(token);
+  }
+
+  async logout(token: string) {
+    if (token) {
+      this.blacklistedTokens.add(token);
+    }
+    return { message: 'Logged out successfully' };
+  }
+
+  async register(data: CreateUserDto, role?: RolesEnum) {
+    return this.usersService.create(
+      { name: data.name, email: data.email, password: data.password },
+      role,
+    );
+
   }
 }

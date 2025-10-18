@@ -1,13 +1,17 @@
 import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './local.stategy';
-import { JwtAuthGuard } from './jwt.strategy';
+import { LocalAuthGuard } from './local.strategy';
+
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { User } from 'src/user/entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
+  ) {}
 
   @Post('register')
   register(@Body() body: { data: CreateUserDto; role?: string }) {
@@ -17,15 +21,29 @@ export class AuthController {
     );
   }
 
+  @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Request() req: User) {
-    return this.authService.login(req);
+  async login(@Body() req: { email: string; password: string }) {
+    const user = await this.authService.validateUser(req.email, req.password);
+    const findUser = await this.userRepo.findOne({
+      where: { email: req.email },
+    });
+    if (!findUser) {
+      throw new NotFoundException('There is no user with email: ' + req.email);
+    }
+    return this.authService.login(findUser);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    await this.authService.logout(token);
+    return { message: 'Logged out successfully' };
+  }
+
   @Post('profile')
-  profile(@Request() req: User) {
-    return req;
+  profile(@Request() req) {
+    return req.user;
   }
 }
