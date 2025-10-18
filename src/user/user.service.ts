@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
+import { RolesEnum, User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -14,13 +14,13 @@ export class UserService {
     const find = this.repo.findOne({ where: { name: username } });
 
     if (!find) {
-      throw new NotFoundException('There is no user on name: ' + username)
+      throw new NotFoundException('There is no user on name: ' + username);
     }
 
     return find;
   }
 
-  async create(data: CreateUserDto, role = 'user') {
+  async create(data: CreateUserDto, role = RolesEnum.user) {
     const hashed = await bcrypt.hash(data.password, 10);
     const user = this.repo.create({ ...data, password: hashed, role });
     return this.repo.save(user);

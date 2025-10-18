@@ -1,8 +1,9 @@
 import { Base } from 'src/base.entity';
 import { Company } from 'src/company/entities/company.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Column, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
+@Entity()
 export class Booking extends Base {
   @Column({ type: 'timestamp' })
   booked: Date;

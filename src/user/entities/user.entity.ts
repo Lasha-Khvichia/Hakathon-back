@@ -22,7 +22,7 @@ export class User extends Base {
     enum: RolesEnum,
     default: RolesEnum.user,
   })
-  role: string;
+  role: RolesEnum;
 
   @OneToMany(() => Booking, (booking) => booking.user)
   bookings: Booking[];

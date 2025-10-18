@@ -3,7 +3,7 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { User } from 'src/user/entities/user.entity';
+import { RolesEnum, User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -14,8 +14,8 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, password: string) {
-    const user = await this.usersService.findByUsername(username);
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByUsername(email);
     if (user && (await bcrypt.compare(password, user.password))) {
       const { password, ...result } = user;
       return result;
@@ -23,27 +23,19 @@ export class AuthService {
     throw new UnauthorizedException('Invalid credentials');
   }
 
-  async login(user: User) {
+  login(user: User) {
+    if (!user) {
+      throw new UnauthorizedException('No user found');
+    }
     const payload = { username: user.name, sub: user.id, role: user.role };
     return { access_token: this.jwtService.sign(payload) };
   }
 
-  isTokenBlacklisted(token: string): boolean {
-    return this.blacklistedTokens.has(token);
-  }
-
-  async logout(token: string) {
-    if (token) {
-      this.blacklistedTokens.add(token);
-    }
-    return { message: 'Logged out successfully' };
-  }
 
   async register(data: CreateUserDto, role?: RolesEnum) {
     return this.usersService.create(
       { name: data.name, email: data.email, password: data.password },
       role,
     );
-
   }
 }
