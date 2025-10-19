@@ -1,4 +1,4 @@
-import { IsInt, IsString } from "class-validator";
+import { IsInt, IsString, IsUrl } from "class-validator";
 
 export class CreateCompanyDto {
     @IsString()
@@ -6,4 +6,7 @@ export class CreateCompanyDto {
 
     @IsInt()
     categoryId: number;
+
+    @IsUrl()
+    url: string;
 }

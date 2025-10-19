@@ -7,6 +7,9 @@ export class Booking extends Base {
   @Column({ type: 'timestamp' })
   booked: Date;
 
+  @Column()
+  ticket: string;
+
   @ManyToOne(() => Company, (company) => company.bookings, { cascade: true })
   @JoinColumn({ name: 'companyId' })
   company: Company;
